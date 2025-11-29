@@ -3,5 +3,9 @@
 </template>
 
 <style>
+body {
+  font-family: 'Noto', serif;
+}
 
 </style>
+

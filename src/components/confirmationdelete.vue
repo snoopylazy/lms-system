@@ -94,10 +94,7 @@
 import useDocument from '@/composables/useDocument';
 import socket from '@/services/socket';
 import { ref } from 'vue';
-// import { useI18n } from 'vue-i18n'
 
-
-// const { t } = useI18n()
 
 const props = defineProps({
     visible: Boolean,
@@ -115,7 +112,15 @@ let collectionName = '';
 
 // Close modal
 const handleClose = () => {
+    loading.value = false; // Reset loading when closing
     emit('onClose');
+};
+
+// Handle backdrop click
+const handleBackdropClick = () => {
+    if (!loading.value) {
+        handleClose();
+    }
 };
 
 // Confirm delete
@@ -130,30 +135,59 @@ const handleSubmit = async (category) => {
         loading.value = true;
 
         switch (category) {
-            case '':
-                collectionName = ''
+            case 'Level':
+                collectionName = 'Level'
                 break
 
+            case 'User':
+                collectionName = 'User'
+                break
 
+            case 'Grammar':
+                collectionName = 'Grammar'
+                break
+
+            case 'Quiz':
+                collectionName = 'Quiz'
+                break
+
+            case 'Lesson':
+                collectionName = 'Lesson'
+                break
+
+            case 'Vocabulary':
+                collectionName = 'Vocabulary'
+                break
+
+            case 'Teacher':
+                collectionName = 'Teacher'
+                break
+
+            case 'Role':
+                collectionName = 'Role'
+                break
         }
 
         const { remove } = useDocument(collectionName);
 
-        if (collectionName === '') {
+        // All collections use the same delete logic
+        const response = await remove(props.doc._id);
 
-            const response = await remove(props.doc._id);
-
-            if (response.data.success == true) {
-                handleConfirmDelete('delete');
-                if (props.isLastRecordOnPage == true) {
-                    console.log("is Last Record On Page", props.isLastRecordOnPage)
-                    socket.emit("lastRecordDeleted", {
-                        collection: ""
-                    });
-                }
-                loading.value = false;
+        if (response && response.status === 200 && response.data) {
+            handleConfirmDelete('delete');
+            if (props.isLastRecordOnPage == true) {
+                console.log("is Last Record On Page", props.isLastRecordOnPage)
+                socket.emit("lastRecordDeleted", {
+                    collection: collectionName
+                });
             }
+            loading.value = false;
+        } else {
+            loading.value = false;
+            console.error('Delete failed:', response);
         }
+
+        
     } catch (err) {
         loading.value = false;
         console.log("failde to submit data", err)

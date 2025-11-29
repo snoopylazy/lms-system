@@ -89,14 +89,10 @@
 
 <script setup>
 import useDocument from '@/composables/useDocument';
-import { fetchAllDoc } from '@/composables/getDocument';
 import { fetchTimestamp } from '@/services/timeStamp';
+import { useBranchStore } from '@/store/branch';
 import { ref } from 'vue';
 
-// import { useI18n } from 'vue-i18n'
-
-
-// const { t } = useI18n()
 
 const props = defineProps({
     visible: Boolean,
@@ -109,8 +105,16 @@ const loading = ref(false);
 let collectionName = '';
 
 // Close modal
-const handleClose = () => {
-    emit('onClose');
+const handleClose = (status) => {
+    loading.value = false; // Reset loading when closing
+    emit('onClose', status);
+};
+
+// Handle backdrop click
+const handleBackdropClick = () => {
+    if (!loading.value) {
+        handleClose('close');
+    }
 };
 
 // Confirm status change
@@ -119,37 +123,81 @@ const handleConfirmStatusChange = (status) => {
     emit('onClose', status);               // close the modal
 };
 
+const branchStore = useBranchStore();
+
+
 const handleSubmit = async (category) => {
     try {
         loading.value = true;
 
         const timestamp = await fetchTimestamp();
+        
+        // Get userId using the composable
+        const { getValidUserId } = await import('@/composables/getUserId');
+        let userId;
+        try {
+            userId = await getValidUserId(true); // Show alert if userId not found
+        } catch (error) {
+            loading.value = false;
+            return;
+        }
+        
         switch (category) {
-            case '':
-                collectionName = ''
+            case 'Level':
+                collectionName = 'Level'
                 break
 
+            case 'User':
+                collectionName = 'User'
+                break
 
+            case 'Grammar':
+                collectionName = 'Grammar'
+                break
 
+            case 'Quiz':
+                collectionName = 'Quiz'
+                break
+
+            case 'Lesson':
+                collectionName = 'Lesson'
+                break
+
+            case 'Vocabulary':
+                collectionName = 'Vocabulary'
+                break
+
+            case 'Teacher':
+                collectionName = 'Teacher'
+                break
+
+            case 'Role':
+                collectionName = 'Role'
+                break
         }
 
         const { update } = useDocument(collectionName);
 
-        if (collectionName === '') {
-            const requestBody = {
-                fields: {
-                    status: props.doc.status == true ? false : true,
-                    updatedAt: timestamp
-                }
-            }
-
-            const response = await update(requestBody, props.doc._id);
-
-            if (response.data.success == true) {
-                handleConfirmStatusChange('update')
-                loading.value = false;
+        // All collections use the same update logic for status change
+        const requestBody = {
+            fields: {
+                status: props.doc.status == true ? false : true,
+                updatedBy: userId,
+                updatedAt: timestamp
             }
         }
+
+        const response = await update(requestBody, props.doc._id);
+
+        if (response && response.status === 200 && response.data) {
+            loading.value = false;
+            handleConfirmStatusChange('update')
+        } else {
+            loading.value = false;
+            console.error('Update failed:', response);
+        }
+
+        
 
     } catch (err) {
         loading.value = false;
