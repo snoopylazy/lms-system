@@ -15,7 +15,7 @@
         </div>
       </div>
 
-      <!-- Lesson Cards -->
+      <!-- Lesson Cards  -->
       <div class="px-6 py-12">
         <div class="max-w-7xl mx-auto">
           <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
