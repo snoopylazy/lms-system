@@ -1,6 +1,6 @@
 <template>
-  <Dialog :visible="open" @update:visible="val => open = val" modal :style="{ width: '95vw', maxWidth: '60rem' }" class="p-2 scrollbar-gold"
-    @hide="handleClose('close')" position="top" draggable closable>
+  <Dialog :visible="open" @update:visible="val => open = val" modal :style="{ width: '95vw', maxWidth: '60rem' }"
+    class="p-2 scrollbar-gold" @hide="handleClose('close')" position="top" draggable closable>
 
     <!-- Custom Header -->
     <template #header>
@@ -28,7 +28,8 @@
           <label for="type" class="block font-semibold mb-1 text-primary-text">
             Type <span class="text-red-500">*</span>
           </label>
-          <Select v-model="type" :options="quizTypes" optionLabel="label" optionValue="value" placeholder="Select quiz type"
+          <Select v-model="type" :options="quizTypes" optionLabel="label" optionValue="value"
+            placeholder="Select quiz type"
             class="w-full border border-primary-border rounded-md focus:border-primary-focus focus:ring-2 focus:ring-primary-light transition-all duration-200"
             required />
         </div>
@@ -40,8 +41,7 @@
           <label for="level" class="block font-semibold mb-1 text-primary-text">
             Level <span class="text-red-500">*</span>
           </label>
-          <Select v-model="levelId" :options="levels" optionLabel="name" optionValue="_id"
-            placeholder="Select a level"
+          <Select v-model="levelId" :options="levels" optionLabel="name" optionValue="_id" placeholder="Select a level"
             class="w-full border border-primary-border rounded-md focus:border-primary-focus focus:ring-2 focus:ring-primary-light transition-all duration-200"
             required />
         </div>
@@ -62,8 +62,7 @@
           <label class="block font-semibold text-primary-text">
             Questions <span class="text-red-500">*</span> ({{ questions.length }})
           </label>
-          <Button type="button" label="Add Question" icon="pi pi-plus" size="small"
-            @click="addQuestion"
+          <Button type="button" label="Add Question" icon="pi pi-plus" size="small" @click="addQuestion"
             class="px-4 py-2 rounded-md bg-primary-default text-primary-text hover:bg-primary-hover transition" />
         </div>
         <div v-if="questions.length > 0" class="space-y-4">
@@ -72,7 +71,8 @@
             <div class="flex items-start justify-between mb-2 gap-3">
               <div class="flex items-center gap-4">
                 <h4 class="font-semibold text-primary-text">Question {{ qIndex + 1 }}</h4>
-                <Select v-model="q.type" :options="quizTypes" optionLabel="label" optionValue="value" class="w-48 text-sm" @change="onQuestionTypeChange(q)" />
+                <Select v-model="q.type" :options="quizTypes" optionLabel="label" optionValue="value"
+                  class="w-48 text-sm" @change="onQuestionTypeChange(q)" />
               </div>
               <Button type="button" icon="pi pi-trash" severity="danger" size="small" text
                 @click="removeQuestion(qIndex)" />
@@ -89,19 +89,20 @@
             </div>
 
             <!-- Dynamic Options/Correct Based on Type -->
-              <div v-if="q.type === 'multiple-choice'" class="mb-3">
+            <div v-if="q.type === 'multiple-choice'" class="mb-3">
               <label class="block text-sm font-medium mb-1 text-primary-text">Options (add 4+)</label>
               <div class="space-y-2">
                 <div v-for="(opt, oIdx) in q.options" :key="oIdx" class="flex items-center gap-2">
                   <InputText v-model="q.options[oIdx]" :placeholder="`Option ${oIdx + 1}`"
                     class="flex-1 p-2 border border-primary-border rounded-md text-sm" required />
-                  <Button v-if="q.options.length > 2" type="button" icon="pi pi-times"
-                    severity="danger" size="small" text @click="q.options.splice(oIdx, 1)" />
+                  <Button v-if="q.options.length > 2" type="button" icon="pi pi-times" severity="danger" size="small"
+                    text @click="q.options.splice(oIdx, 1)" />
                 </div>
                 <Button type="button" label="Add Option" icon="pi pi-plus" size="small" text
                   @click="q.options.push('')" />
               </div>
-              <label class="block text-sm font-medium mb-1 text-primary-text mt-2">Correct Option Index (0-based) *</label>
+              <label class="block text-sm font-medium mb-1 text-primary-text mt-2">Correct Option Index (0-based)
+                *</label>
               <InputText v-model.number="q.correctAnswer" type="number" min="0" placeholder="e.g., 0"
                 class="w-full p-2 border border-primary-border rounded-md text-sm" required />
             </div>
@@ -147,8 +148,8 @@
         <button type="submit"
           class="px-6 py-2 rounded-full font-semibold text-white bg-gradient-to-r from-primary to-primary-dark hover:from-primary-dark hover:to-primary active:scale-95 transition-all duration-200">
           <span v-if="loading" class="flex items-center">
-            <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg"
-              fill="none" viewBox="0 0 24 24">
+            <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none"
+              viewBox="0 0 24 24">
               <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4">
               </circle>
               <path class="opacity-75" fill="currentColor"
@@ -160,7 +161,8 @@
           <span v-else>{{ isEditDoc ? 'Save' : 'Create' }}</span>
         </button>
       </div>
-      <p v-if="questions.length === 0 && !loading" class="text-red-500 text-sm mt-2">* At least one question is required</p>
+      <p v-if="questions.length === 0 && !loading" class="text-red-500 text-sm mt-2">* At least one question is required
+      </p>
     </form>
   </Dialog>
 </template>
@@ -170,19 +172,28 @@ import useDocument from '@/composables/useDocument'
 import { fetchAllDoc } from '@/composables/getDocument'
 import { fetchTimestamp } from '@/services/timeStamp'
 import { useBranchStore } from '@/store/branch'
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watch, nextTick, computed } from 'vue'
+import Dialog from 'primevue/dialog'
+import InputText from 'primevue/inputtext'
+import Select from 'primevue/select'
+import Button from 'primevue/button'
+import Textarea from 'primevue/textarea'
+import ToggleSwitch from 'primevue/toggleswitch'
 
 const props = defineProps({
   visible: Boolean,
-  isEditDoc: Boolean,
+  isEdit: Boolean,
   doc: Object,
 })
-const emit = defineEmits(['onClose'])
+const emit = defineEmits(['on-close'])
+
+// expose a stable `isEditDoc` binding for the existing template and internal usage
+const isEditDoc = computed(() => props.isEdit)
 const branchStore = useBranchStore()
 
 const name = ref('')
 const type = ref('')
-const questions = ref([]) // New: Array of objects { question, type, options?, correctAnswer, explanation? }
+const questions = ref([])
 const levelId = ref(null)
 const teacherId = ref(null)
 const status = ref(true)
@@ -199,12 +210,32 @@ const quizTypes = ref([
   { label: 'Essay', value: 'essay' }
 ])
 
-onMounted(async () => {
-  if (props.visible) open.value = props.visible
+const fetchLevels = async () => {
+  try {
+    const data = await fetchAllDoc('Level', {
+      dynamicConditions: [{ field: "status", operator: "==", value: true }]
+    })
+    levels.value = data || []
+  } catch (error) {
+    console.error('Error fetching levels:', error)
+    levels.value = []
+  }
+}
 
-  await Promise.all([fetchLevels(), fetchTeachers()])
+const fetchTeachers = async () => {
+  try {
+    const data = await fetchAllDoc('Teacher', {
+      dynamicConditions: [{ field: "status", operator: "==", value: true }]
+    })
+    teachers.value = data || []
+  } catch (error) {
+    console.error('Error fetching teachers:', error)
+    teachers.value = []
+  }
+}
 
-  if (props.isEditDoc) {
+const populateFormData = () => {
+  if (isEditDoc.value && props.doc) {
     name.value = props.doc.name || ''
     type.value = props.doc.type || 'multiple-choice'
     // Support both old structure (arrays) and new nested structure (objects)
@@ -235,31 +266,46 @@ onMounted(async () => {
   } else {
     handleClear()
   }
+}
+
+onMounted(async () => {
+  if (props.visible) open.value = props.visible
+
+  await Promise.all([fetchLevels(), fetchTeachers()])
+  
+  // Populate form data if editing
+  if (isEditDoc.value && props.doc) {
+    populateFormData()
+  }
 })
 
-const fetchLevels = async () => {
-  try {
-    const data = await fetchAllDoc('Level', {
-      dynamicConditions: [{ field: "status", operator: "==", value: true }]
-    })
-    levels.value = data || []
-  } catch (error) {
-    console.error('Error fetching levels:', error)
-    levels.value = []
+// Watch visible prop and doc data for changes
+watch(() => props.visible, async (newVisible) => {
+  open.value = newVisible
+  if (newVisible) {
+    // Ensure data is loaded before populating
+    if (!levels.value.length || !teachers.value.length) {
+      await Promise.all([fetchLevels(), fetchTeachers()])
+    }
+    if (isEditDoc.value && props.doc) {
+      populateFormData()
+    }
   }
-}
+})
 
-const fetchTeachers = async () => {
-  try {
-    const data = await fetchAllDoc('Teacher', {
-      dynamicConditions: [{ field: "status", operator: "==", value: true }]
-    })
-    teachers.value = data || []
-  } catch (error) {
-    console.error('Error fetching teachers:', error)
-    teachers.value = []
+// Watch isEditDoc prop
+watch(() => props.isEdit, (newIsEdit) => {
+  if (props.visible && newIsEdit && props.doc) {
+    populateFormData()
   }
-}
+})
+
+// Watch doc specifically for changes
+watch(() => props.doc, (newDoc) => {
+  if (props.visible && props.isEditDoc && newDoc) {
+    populateFormData()
+  }
+}, { deep: true })
 
 const addQuestion = () => {
   questions.value.push({
@@ -304,7 +350,7 @@ const handleClear = () => {
 const handleClose = (status) => {
   open.value = false
   handleClear()
-  setTimeout(() => emit('onClose', status), 100)
+  setTimeout(() => emit('on-close', status), 100)
 }
 
 const handleSubmit = async () => {
@@ -313,21 +359,21 @@ const handleSubmit = async () => {
     return
   }
   // Validate based on type
-  for (let i=0; i<questions.value.length; i++) {
+  for (let i = 0; i < questions.value.length; i++) {
     const q = questions.value[i]
     if (!q.question || typeof q.question !== 'string' || q.question.trim() === '') {
-      alert(`Question ${i+1} requires question text`)
+      alert(`Question ${i + 1} requires question text`)
       return
     }
 
     if (q.type === 'multiple-choice') {
       if (!q.options || q.options.length < 2) { alert('Multiple-choice needs at least 2 options!'); return }
       // correctAnswer can be 0
-      if (q.correctAnswer === null || q.correctAnswer === undefined || q.correctAnswer === '') { alert(`Question ${i+1}: please provide a valid correct option index`); return }
+      if (q.correctAnswer === null || q.correctAnswer === undefined || q.correctAnswer === '') { alert(`Question ${i + 1}: please provide a valid correct option index`); return }
     } else if (q.type === 'true-false') {
-      if (q.correctAnswer !== 'true' && q.correctAnswer !== 'false') { alert(`Question ${i+1}: correct answer must be 'true' or 'false'`); return }
+      if (q.correctAnswer !== 'true' && q.correctAnswer !== 'false') { alert(`Question ${i + 1}: correct answer must be 'true' or 'false'`); return }
     } else if (q.type === 'fill-blank') {
-      if (!q.correctAnswer || String(q.correctAnswer).trim() === '') { alert(`Question ${i+1}: fill-blank requires a correct text`); return }
+      if (!q.correctAnswer || String(q.correctAnswer).trim() === '') { alert(`Question ${i + 1}: fill-blank requires a correct text`); return }
     }
     // other types are accepted but not strictly validated here
   }
@@ -368,3 +414,23 @@ const handleSubmit = async () => {
   }
 }
 </script>
+
+<style scoped>
+.scrollbar-gold::-webkit-scrollbar {
+  width: 8px;
+}
+
+.scrollbar-gold::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 10px;
+}
+
+.scrollbar-gold::-webkit-scrollbar-thumb {
+  background: #d4af37;
+  border-radius: 10px;
+}
+
+.scrollbar-gold::-webkit-scrollbar-thumb:hover {
+  background: #b8941f;
+}
+</style>

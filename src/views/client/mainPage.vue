@@ -2,16 +2,34 @@
   <div class="page-root">
     <div class="bg-gradient-to-b from-blue-900 to-blue-800 min-h-screen">
 
-      <!-- Hero Section with Title -->
-      <div class="bg-black px-6 py-8">
-        <div class="max-w-7xl mx-auto">
-          <h1 class="text-5xl md:text-6xl font-bold text-center tracking-tight">
-            <span class="text-blue-400">English</span>
-            <!-- <span class="text-green-400 ml-3">Listening</span> -->
-            <span class="text-red-400 ml-3">Lesson</span>
-            <span class="text-purple-400 ml-3">Library</span>
-            <span class="text-yellow-400 ml-3">Online</span>
-          </h1>
+      <!-- Hero Section with Title and Header Menu -->
+      <div class="bg-black px-6 py-4">
+        <div class="max-w-7xl mx-auto flex items-center justify-between">
+          <!-- Left: Title -->
+          <div class="flex items-center space-x-3">
+            <h1 class="text-2xl md:text-3xl font-bold text-white tracking-tight">
+              <span class="text-blue-400">English</span>
+              <span class="text-red-400 ml-2">Lesson</span>
+              <span class="text-purple-400 ml-2">Library</span>
+            </h1>
+          </div>
+
+          <!-- Right: Header Menu -->
+          <nav class="hidden md:flex items-center gap-4">
+            <router-link to="/client/grammar" class="text-sm text-white/90 hover:text-blue-300 px-3 py-2 rounded-md hover:bg-white/5 transition">Grammar</router-link>
+            <router-link :to="{ name: 'ClientLessonList' }" class="text-sm text-white/90 hover:text-blue-300 px-3 py-2 rounded-md hover:bg-white/5 transition">Lessons</router-link>
+          </nav>
+
+          <!-- Mobile menu (simple) -->
+          <div class="md:hidden">
+            <details class="text-white">
+              <summary class="cursor-pointer">Menu</summary>
+              <div class="mt-2 bg-white/5 rounded-md p-2 flex flex-col gap-1">
+                <router-link to="/client/grammar" class="text-sm text-white/90 px-2 py-1 rounded hover:bg-white/10">Grammar</router-link>
+                <router-link :to="{ name: 'ClientLessonList' }" class="text-sm text-white/90 px-2 py-1 rounded hover:bg-white/10">Lessons</router-link>
+              </div>
+            </details>
+          </div>
         </div>
       </div>
 
@@ -54,9 +72,9 @@
       <section class="py-16 px-4 max-w-7xl mx-auto bg-gradient-to-b from-blue-900 to-blue-800">
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
           <div>
-            <h2 class="text-4xl font-bold mb-6 text-white">Welcome to ELLLO!</h2>
+            <h2 class="text-4xl font-bold mb-6 text-white">Welcome to Chinda!</h2>
             <p class="text-lg text-white leading-relaxed mb-8">
-              ELLLO has over 3,000 free listening lessons for all levels! Most activities have audio or video, a
+              Chinda has over 3,000 free listening lessons for all levels! Most activities have audio or video, a
               transcript, vocabulary lesson and interactive quiz.
             </p>
 

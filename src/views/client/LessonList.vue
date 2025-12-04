@@ -12,9 +12,9 @@
             </ol>
           </nav>
         </div>
-        <div>
-          <router-link to="/client/grammar" class="text-white/80 hover:text-white">Grammar</router-link>
-        </div>
+        <!-- <div>
+          <router-link to="/client/lessons" class="hover:text-blue-600">Lesson List</router-link>
+        </div> -->
       </div>
     </nav>
 

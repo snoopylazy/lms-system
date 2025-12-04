@@ -9,7 +9,7 @@
             <ol class="flex items-center gap-2">
               <li><router-link to="/" class="hover:text-blue-600">Home</router-link></li>
               <li><span>/</span></li>
-              <li><router-link to="/client/grammar" class="hover:text-blue-600">Grammar</router-link></li>
+              <li><button @click="goBack" class="hover:text-blue-600 cursor-pointer bg-none border-none p-0">Back</button></li>
               <li><span>/</span></li>
               <li class="text-white font-medium">{{ lesson.name }}</li>
             </ol>
@@ -95,20 +95,31 @@
           <div v-if="activeTab === 'grammar'" class="p-6">
             <h2 class="text-2xl font-bold mb-4 text-white">Lesson Content</h2>
             <div class="prose prose-lg max-w-none bg-white/5 p-6 rounded-lg text-white/90">
-              <p class="leading-relaxed mb-4">{{ lesson.description }}</p>
-              <!-- Example box -->
-                <div class="bg-white/5 border-l-4 border-white/20 p-4 my-4 rounded">
-                <h3 class="font-semibold text-white mb-2">Example</h3>
-                <p class="text-white/80">This is a free study lesson. Use this content to understand the grammar
-                  concept. Practice with sentences below!</p>
-                <ul class="mt-2 list-disc list-inside text-white/80">
-                  <li>Subject + Verb + Object</li>
-                  <li>Example: I eat apple.</li>
-                </ul>
+              <!-- Lesson Description at the top (only show if source is Lesson) -->
+              <div v-if="source === 'Lesson'" class="mb-6 pb-6 border-b border-white/20">
+                <h3 class="text-lg font-semibold text-white mb-2">{{ lesson.name }}</h3>
+                <p class="leading-relaxed text-white/90">{{ lesson.description }}</p>
               </div>
-              <!-- Motivational Quote -->
-              <blockquote class="mt-6 italic text-center text-white/80 border-l-4 border-white/10 pl-4">"Grammar is the
-                logic of speech." — Ralph Waldo Emerson</blockquote>
+
+              <!-- Grammar Content -->
+              <div v-if="grammarData && grammarData._id">
+                <h3 class="text-xl font-semibold text-white mb-4">{{ grammarData.name || 'Grammar Content' }}</h3>
+                <p class="leading-relaxed mb-4">{{ grammarData.description }}</p>
+                <!-- Example box -->
+                <div class="bg-white/5 border-l-4 border-white/20 p-4 my-4 rounded">
+                  <h4 class="font-semibold text-white mb-2">Example</h4>
+                  <p class="text-white/80">This is a free study lesson. Use this content to understand the grammar concept. Practice with sentences below!</p>
+                  <ul class="mt-2 list-disc list-inside text-white/80">
+                    <li>Subject + Verb + Object</li>
+                    <li>Example: I eat apple.</li>
+                  </ul>
+                </div>
+                <!-- Motivational Quote -->
+                <blockquote class="mt-6 italic text-center text-white/80 border-l-4 border-white/10 pl-4">"Grammar is the logic of speech." — Ralph Waldo Emerson</blockquote>
+              </div>
+              <div v-else class="text-white/80">
+                <!-- <p>Grammar content is loading or not available.</p> -->
+              </div>
             </div>
           </div>
 
@@ -196,7 +207,7 @@
           <summary class="font-semibold cursor-pointer hover:text-white flex items-center gap-2 mb-2">Lesson Details
           </summary>
           <div class="space-y-1 text-white/80 pl-4">
-            <p><strong>ID:</strong> {{ lesson._id || lesson.id }}</p>
+            <p><strong>Name:</strong> {{ lesson.name }}</p>
             <p><strong>Created:</strong> {{ formatDate(lesson.createdAt) }}</p>
             <p><strong>Status:</strong> {{ lesson.status ? 'Active' : 'Inactive' }}</p>
           </div>
@@ -227,8 +238,10 @@ export default {
     const teacherName = ref('')
     const loading = ref(false)
     const allLessons = ref([])
-    // Default to quiz tab when the route is the lesson route, otherwise show grammar
-    const activeTab = ref(route.name === 'ClientLesson' ? 'quiz' : 'grammar') // New: Tab state
+    const levelNames = ref({}) // Cache for level id -> name mapping
+    const grammarData = ref({}) // Grammar data for the lesson
+    // Default tab. We'll set this properly after loading the document (based on source: Lesson vs Grammar)
+    const activeTab = ref('grammar') // New: Tab state
 
     const formatDate = (date) => {
       if (!date) return 'N/A'
@@ -244,13 +257,74 @@ export default {
       if (Array.isArray(levelId)) {
         return levelId.map(l => {
           if (!l) return ''
-          if (typeof l === 'object') return l.name || l.title || String(l._id || l.id).slice(0,6)
-          return String(l).slice(0,6)
+          if (typeof l === 'object') return l.name || l.title || 'Unknown Level'
+          // It's an ID string, check cache
+          return levelNames.value[l] || 'Loading...'
         }).filter(Boolean).join(', ')
       }
       if (!levelId) return 'N/A'
-      if (typeof levelId === 'object') return levelId.name || levelId.title || String(levelId._id || levelId.id).slice(0,6)
-      return String(levelId)
+      if (typeof levelId === 'object') return levelId.name || levelId.title || 'Unknown Level'
+      // It's an ID string, check cache
+      return levelNames.value[levelId] || 'Loading...'
+    }
+
+    const loadLevelNames = async (levelIds) => {
+      // Filter out IDs we already have cached
+      const idsToFetch = []
+      if (Array.isArray(levelIds)) {
+        levelIds.forEach(id => {
+          const idStr = typeof id === 'object' ? (id._id || id.id) : id
+          if (idStr && !levelNames.value[idStr]) {
+            idsToFetch.push(idStr)
+          }
+        })
+      } else if (levelIds && typeof levelIds === 'string' && !levelNames.value[levelIds]) {
+        idsToFetch.push(levelIds)
+      }
+
+      if (idsToFetch.length === 0) return
+
+      try {
+        const res = await axios.get(`${apiURL}/lms/api/getAllDocs/Level`, {
+          params: {
+            dynamicConditions: JSON.stringify(idsToFetch.map(id => ({ field: '_id', operator: '==', value: id }))),
+            limit: 100
+          }
+        })
+        const levels = res.data?.data || []
+        levels.forEach(level => {
+          levelNames.value[level._id || level.id] = level.name || 'Unknown'
+        })
+      } catch (err) {
+        console.warn('Failed to load level names', err)
+      }
+    }
+
+    const loadGrammarData = async (grammarId) => {
+      if (!grammarId) return
+      try {
+        const res = await axios.get(`${apiURL}/lms/api/getDocByMultipleId`, {
+          params: {
+            collectionName: 'Grammar',
+            id: grammarId,
+            populateFields: 'levelId,teacherId'
+          }
+        })
+        const data = res.data
+        console.log('Grammar data response:', data) // Debug log
+        if (Array.isArray(data) && data.length > 0) {
+          grammarData.value = data[0]
+        } else if (data && typeof data === 'object' && data._id) {
+          grammarData.value = data
+        } else if (data && typeof data === 'object' && data.data && Array.isArray(data.data)) {
+          // Handle case where data is wrapped in a data property
+          grammarData.value = data.data[0] || {}
+        } else {
+          console.warn('Unexpected grammar data format:', data)
+        }
+      } catch (err) {
+        console.warn('Failed to load grammar data', err)
+      }
     }
 
     const estimateDuration = (lesson) => {
@@ -304,6 +378,22 @@ export default {
           if (route.name === 'ClientLesson') source.value = 'Lesson'
           else if (doc.quizId && ((Array.isArray(doc.quizId) && doc.quizId.length) || (!Array.isArray(doc.quizId) && doc.quizId))) source.value = 'Lesson'
           else source.value = 'Grammar'
+
+          // Ensure UI tab reflects the document source (Lesson -> quiz tab, Grammar -> grammar tab)
+          activeTab.value = source.value === 'Lesson' ? 'quiz' : 'grammar'
+
+          // Load level names if needed
+          if (doc.levelId) {
+            await loadLevelNames(doc.levelId)
+          }
+
+          // Load grammar data if lesson has grammarId
+          // If the document itself is Grammar (source === 'Grammar'), use it directly
+          if (source.value === 'Grammar') {
+            grammarData.value = doc
+          } else if (doc.grammarId) {
+            await loadGrammarData(doc.grammarId)
+          }
         }
 
         // fetch teacher name for display
@@ -427,7 +517,8 @@ export default {
     // If the route name changes (e.g. user navigates between grammar and lesson routes)
     // keep tab selection appropriate: quiz for the lesson route, grammar otherwise.
     watch(() => route.name, (newName) => {
-      if (newName === 'ClientLesson') activeTab.value = 'quiz'
+      // Prefer source when available; otherwise fall back to route name
+      if (source.value === 'Lesson' || newName === 'ClientLesson') activeTab.value = 'quiz'
       else activeTab.value = 'grammar'
     })
     // whenever lesson changes we should try to load vocabulary for the lesson's level
@@ -437,7 +528,7 @@ export default {
     return {
       lesson, loading, formatDate, formatLevel, hasPrevious, hasNext, prevLesson, nextLesson, goBack,
       activeTab, quizName, teacherName, estimateDuration,
-      vocabularies, vocabLoading, source, fetchAttempts, notFoundNote, route
+      vocabularies, vocabLoading, source, fetchAttempts, notFoundNote, route, levelNames, grammarData
     }
   }
 }

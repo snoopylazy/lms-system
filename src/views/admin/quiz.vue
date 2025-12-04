@@ -3,7 +3,7 @@
     <h2 class="text-primary-dark text-lg font-bold mb-2">Quiz</h2>
 
     <div
-      class="border-2 border-primary-border p-4 rounded-md flex flex-col lg:flex-row lg:items-center justify-between gap-4 my-4 bg-white rounded-xl shadow-sm">
+      class="border-2 border-primary-border p-4 flex flex-col lg:flex-row lg:items-center justify-between gap-4 my-4 bg-white rounded-xl shadow-sm">
       <!-- Row selector -->
       <div class="flex flex-col sm:flex-row sm:items-center gap-2">
         <Select v-model="pageSize" :options="optionPageSize" option-label="value" option-value="value"
