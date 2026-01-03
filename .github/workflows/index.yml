@@ -1,6 +1,12 @@
 name: Node.js CI/CD (FTP Deploy)
 
 on:
+    workflow_dispatch:
+        inputs:
+          enviroment:
+            description: 'Select the deployment environment'
+            required: true
+            default: 'staging'
 
     push:
         branches: [main]
