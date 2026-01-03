@@ -2,7 +2,7 @@ name: Node.js CI/CD (FTP Deploy)
 
 on:
   push:
-    branches: [msater]
+    branches: [master]
 
 jobs:
   build-and-deploy:
